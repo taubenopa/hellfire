@@ -1,4 +1,4 @@
-// HELLFIRE LAN - Story-Modus (Duo): Level, Bosse, Wellen, Case Opening, Slime-Dialoge, Musik
+// HELLFIRE LAN - Story-Modus (1-4 Spieler): Level, Bosse, Wellen, Case Opening, Slime-Dialoge, Musik
 // Der Host simuliert alles (SS = Story-Zustand), der Mitspieler bekommt SS in jedem Snapshot als S.st.
 
 // ================= DATEN (hier kannst du alles anpassen) =================
@@ -10,7 +10,8 @@ const LEVELS=[null,
  {map:6,nm:'PRÄSIDENTENSTRASSE',mus:'level5_ballack',song:'ballack'},
  {map:7,nm:'ULTIMATIVE KAMPF ARENA BONN',mus:'level6_fur_jacket_swag',song:'fur.jacket.swag.for.real'}];
 const BOSS_HELPERS=false;           // true = Bosse rufen wieder Helfer dazu (deutlich schwerer)
-const START_LIVES=5;                // gemeinsame Leben pro Level
+const START_LIVES=5;                // gemeinsame Leben pro Level (ab dem 3. Spieler +1 pro Spieler)
+const nPl=()=>Math.max(1,players.filter(p=>p.on).length),startLives=()=>START_LIVES+Math.max(0,nPl()-2);
 const WAVES_PER_LEVEL=3;            // Level 1: 3 Wellen, Level 2: 6, ... Level 6: 18 (5 = 5/10/.../30)
 // Bosse: hp Leben, sp Tempo, fan Faecherschuss (Winkel), fcd Pause dazwischen, rad Kugeln im Ring, rcd Pause,
 // pt Geschoss beim Faecher, rt Geschosse im Ring (2 Feuer, 23 Becher, 26 Stein, 27 Kugel, 28 Messer, 29 Giftschaedel/verfolgt, 36 Musiknote, 37 Kugelblitz)
@@ -80,7 +81,7 @@ const dlgL=s=>(s.ph=='intro'?DLG.intro:DLG[s.lv]).map(t=>t.replace('{n}',(s.lv+1
 function setPh(p){SS.ph=p;SS.t=0;SS.cf=0;SS.dl=0}
 function storyAmmo(p){for(let w=2;w<WP.length;w++)if(p.lo>>w&1)p.am[w]=Math.max(p.am[w]||0,Math.ceil(MX[w]*.4))}
 function startLevel(){
- const s=SS;loadMap(LEVELS[s.lv].map);E=[];J=[];PK=[];NJ=[];s.wm=s.lv*WAVES_PER_LEVEL;s.wv=Math.min(s.wm,Math.max(0,s.ck-1));wave=s.wv;s.boss=0;toSpawn=0;spawnT=0;waitT=2.5;s.lives=Math.max(START_LIVES,s.lives);
+ const s=SS;loadMap(LEVELS[s.lv].map);E=[];J=[];PK=[];NJ=[];s.wm=s.lv*WAVES_PER_LEVEL;s.wv=Math.min(s.wm,Math.max(0,s.ck-1));wave=s.wv;s.boss=0;toSpawn=0;spawnT=0;waitT=2.5;s.lives=Math.max(startLives(),s.lives);
  for(const p of players){p.x=SP[p.i][0];p.y=SP[p.i][1];p.a=A0[p.i];p.rc++;p.al=true;p.hp=100;p.ar=0;p.iv=2;p.lo=s.lo;storyAmmo(p)}
  flow();saveGame();setPh('play');
 }
@@ -108,7 +109,7 @@ function storyTick(dt){
    {const on=players.filter(p=>p.on);if(s.ph=='play'&&on.length&&on.every(p=>!p.al)&&s.lives<=0){ev(9);setPh('over')}}break;
   case'clear':sim(dt);if(s.t>4.5){if(s.lv>=6)setPh('talk');else openCase()}break;
   case'case':if(cf&&s.t>7)setPh(s.lv>=6?'end':'talk');break;
-  case'over':if(cf&&s.t>1.5){s.lives=START_LIVES;setPh('card')}break;
+  case'over':if(cf&&s.t>1.5){s.lives=startLives();setPh('card')}break;
   case'end':if(s.t<1)try{localStorage.removeItem('hfStory')}catch(e){}if(cf&&s.t>3)location.reload();break;
  }
 }
@@ -122,13 +123,13 @@ function storyWaves(dt,np){
 }
 function farSpawn(){const L=ESP.filter(q=>players.every(p=>!p.on||!p.al||Math.hypot(p.x-q[0],p.y-q[1])>5));const P=L.length?L:ESP;return P[Math.random()*P.length|0]}
 function storySpawn(){
- const s=SS;if(spawnT>0||E.length>=5+s.lv)return;
+ const s=SS;if(spawnT>0||E.length>=4+s.lv+nPl())return;
  const L=[20,21];if(s.lv>1||s.wv>=3)L.push(22);if(s.lv>=3)L.push(20,22);
  mk(L[Math.random()*L.length|0],farSpawn());toSpawn--;spawnT=Math.max(.7,1.5-s.lv*.1);
 }
 function storyEnemy(t,at){
  const L=LV(),np=players.filter(p=>p.on).length;let hp,r,sp;
- if(t>=30){const c=BOSS[t-29];hp=story?c.hp*(np>1?1.3:1):(c.hp*1.3+wave*45)*(1+.3*(np-1));r=.6;sp=c.sp}
+ if(t>=30){const c=BOSS[t-29];hp=story?c.hp*(1+.3*(np-1)):(c.hp*1.3+wave*45)*(1+.3*(np-1));r=.6;sp=c.sp}
  else{const k=story?1+(L-1)*.28+SS.wv*.012:1+wave*.07,T={20:[26,.3,2.5+L*.12],21:[60,.42,1.6+L*.07],22:[36,.34,2+L*.08]}[t];hp=T[0]*k;r=T[1];sp=T[2]}
  let ex=at[0]+(Math.random()-.5)*.8,ey=at[1]+(Math.random()-.5)*.8;if(!can(ex,ey,.5)){ex=at[0];ey=at[1]}
  return{x:ex,y:ey,t,hp:hp*dif,mh:hp*dif,r,sp,fl:0,cd:1,dead:0,ph:Math.random()*6};
@@ -242,7 +243,7 @@ function drawMap(s){
   if(done){x.strokeStyle='#e22';x.lineWidth=2;x.beginPath();x.moveTo(a-9,b-38);x.lineTo(a+9,b-16);x.moveTo(a+9,b-38);x.lineTo(a-9,b-16);x.stroke()}
   x.fillStyle='#222';x.beginPath();x.arc(a,b,10,0,7);x.fill();x.fillStyle=done?'#3c3':cur?(blink()?'#fd4':'#fa0'):'#c33';x.beginPath();x.arc(a,b,8,0,7);x.fill();txt(''+lv,a,b+4,10,'#fff','center')}
  const[ca,cb]=NODES[s.lv-1],ps=S.p.filter(p=>p.on);
- ps.forEach((p,i)=>{const c=CHARS[p.ch|0]||CHARS[0];sprD(c[1],ca-26+(ps.length>1?i*14-7:0)-(i?0:0),cb+14+Math.abs(Math.sin(now*5+i))*-4,34)});
+ ps.forEach((p,i)=>{const c=CHARS[p.ch|0]||CHARS[0];sprD(c[1],ca-26+(i-(ps.length-1)/2)*13,cb+14+Math.abs(Math.sin(now*5+i))*-4,34)});
  x.fillStyle='#000a';x.fillRect(0,0,VW,22);txt('STORY-MODUS  ·  WELT LIFESTYLECRAZY',8,15,11,'#fff');txt('♥ '+s.lives+'   ● '+s.coins,VW-8,15,11,'#fd4','right');
  const L=LEVELS[s.lv];x.fillStyle='#000c';x.fillRect(0,224,VW,46);
  txt('LEVEL '+s.lv+': '+L.nm,VW/2,240,13,'#fff','center');txt((s.lv*WAVES_PER_LEVEL)+' Wellen  ·  Boss: '+BOSS[s.lv].nm+'  ·  Song: '+L.song,VW/2,253,8,'#bbc','center');prompt_(265,'ENTER / Klick: Level starten');
@@ -251,7 +252,7 @@ function drawCard(s){
  const L=LEVELS[s.lv],ps=S.p.filter(p=>p.on);x.fillStyle='#000';x.fillRect(0,0,VW,VH);
  txt('LEVEL 1-'+s.lv,VW/2,62,28,'#fff','center');txt(L.nm,VW/2,84,L.nm.length>20?12:15,'#fd4','center');
  const w=ps.length*30+70,a0=VW/2-w/2;ps.forEach((p,i)=>sprD((CHARS[p.ch|0]||CHARS[0])[1],a0+15+i*30,170,60));
- txt('× '+Math.max(START_LIVES,s.lives),a0+ps.length*30+12,150,22,'#fff');
+ txt('× '+Math.max(START_LIVES+Math.max(0,ps.length-2),s.lives),a0+ps.length*30+12,150,22,'#fff');
  txt('BOSS: '+BOSS[s.lv].nm,VW/2,204,12,'#f55','center');txt(s.lv*WAVES_PER_LEVEL+' Wellen',VW/2,220,10,'#bbc','center');
  txt('Song: '+L.song,VW/2,236,9,'#889','center');
  if(s.ck>1)txt('Checkpoint: '+(s.ck>s.lv*WAVES_PER_LEVEL?'direkt zum Boss':'weiter ab Welle '+s.ck),VW/2,254,9,'#5e8','center');
