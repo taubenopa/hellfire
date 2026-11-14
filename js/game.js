@@ -109,7 +109,15 @@ const chs=[];let pend=null,ch=null;
 const CB=[30,31,32,33,34,19,35],coopBoss=w=>CB[((w/5|0)+CB.length-1)%CB.length],bossName=t=>t==19?'Jxhn2K':t==10?'LIL M':BOSS[t-29].nm;
 function LV(){return story?SS.lv:Math.min(6,1+(wave/5|0))}
 function hurtP(p,d){if(!p.al||p.iv>0)return;d*=dmg;if(p.ar>0){const a=Math.min(p.ar,d*.5);p.ar-=a;d-=a}p.hp-=d;if(p.hp<=0){p.hp=0;p.al=false;p.rt=dm||story?3:5}}
-function resp(p){p.al=true;p.hp=100;p.x=SP[p.i][0];p.y=SP[p.i][1];p.a=A0[p.i];p.rc++;p.ar=0;if(story){p.iv=2.5;storyAmmo(p);return}p.w=firstW(p.lo);p.am=AM0()}
+function spawnSpot(p){
+ const C=[...SP,...ESP];for(let k=0;k<40;k++){const a=1.5+Math.random()*(N-3),b=1.5+Math.random()*(N-3);if(can(a,b,.4))C.push([a,b])}
+ const sc=C.map(c=>{let d=99;for(const e of E)if(!e.dead)d=Math.min(d,Math.hypot(e.x-c[0],e.y-c[1]));for(const j of J)if(j.o<0)d=Math.min(d,Math.hypot(j.x-c[0],j.y-c[1])+1);
+   if(dm)for(const q of players)if(q!==p&&q.on&&q.al)d=Math.min(d,Math.hypot(q.x-c[0],q.y-c[1]));
+   if(p.lx!=null)d=Math.min(d,Math.hypot(p.lx-c[0],p.ly-c[1])+2);   // nicht wieder dort, wo man zuletzt erschienen ist
+   return[d,c]}).sort((a,b)=>b[0]-a[0]);
+ return sc[Math.random()*Math.min(4,sc.length)|0][1];   // einer der 4 sichersten Punkte, zufaellig
+}
+function resp(p){const c=spawnSpot(p);p.al=true;p.hp=100;p.x=c[0];p.y=c[1];p.lx=c[0];p.ly=c[1];p.a=Math.atan2(N/2-c[1],N/2-c[0]);p.rc++;p.ar=0;p.iv=story?2.5:2;if(story){storyAmmo(p);return}p.w=firstW(p.lo);p.am=AM0()}
 function hurtE(e,d,o){if(e.dead)return;e.hp-=d;e.fl=.1;if(e.hp>0)ev(0);if(e.hp<=0){e.dead=1;ev(1);if(story)storyKill(e);if(players[o])players[o].sc+=e.t>=30?500:e.t==19?250:e.t==10?100:e.t==1?15:10;const q=Math.random();if(e.t==10||e.t==19||e.t>=30)PK.push({x:e.x-.4,y:e.y,t:6},{x:e.x+.4,y:e.y,t:7},{x:e.x,y:e.y+.4,t:11});else if(q<.45)PK.push({x:e.x,y:e.y,t:q<.2?6:q<.35?7:11})}}
 function shoot(p,a,w){
  const rx=Math.cos(a),ry=Math.sin(a);let bd=Math.min(cast(p.x,p.y,rx,ry).d,w.rg),best=null;const wd=bd;
@@ -180,7 +188,7 @@ function sim(dt){
    e.rb=(e.rb===undefined?5:e.rb)-dt;
    if(e.rb<=0&&los){const n=B2?(e.en?28:20):(e.en?18:12);for(let k=0;k<n;k++){const a=k/n*6.283+e.ph;J.push({x:e.x,y:e.y,vx:Math.cos(a)*4.5,vy:Math.sin(a)*4.5,t:2,o:-1,l:4})}
     if(BOSS_HELPERS&&E.length<14){if(B2){mk(13);mk(17);if(e.en)mk(22)}else{mk(14);if(e.en)mk(16)}}e.rb=B2?(e.en?3:5):(e.en?4:6.5);e.at=.3;ev(5)}
-   if(los&&e.cd<=0){for(const k of(B2?[-.5,-.25,0,.25,.5]:[-.25,0,.25])){const c=Math.cos(k),s=Math.sin(k);J.push({x:e.x,y:e.y,vx:(ux*c-uy*s)*6,vy:(ux*s+uy*c)*6,t:B2?31:2,o:-1,l:4})}e.cd=1.4}
+   if(los&&e.cd<=0){for(const k of(B2?[-.5,-.25,0,.25,.5]:[-.25,0,.25])){const c=Math.cos(k),s=Math.sin(k);J.push({x:e.x,y:e.y,vx:(ux*c-uy*s)*6,vy:(ux*s+uy*c)*6,t:B2?37:2,o:-1,l:4})}e.cd=1.4}
    if(bd<1.2&&e.cd<=.5){hurtP(tp,B2?35:25);e.cd=1}
   }else{if(bd>.9)move(e,ux,uy,e.sp*dt);else if(e.cd<=0){hurtP(tp,e.t==9?10:e.t==13?18:e.t==17?20:15);e.cd=e.t==13?.6:.8}}
   const mvd=Math.hypot(e.x-ox,e.y-oy);e.ph+=mvd*4;e.mv=mvd>0?1:0;if(e.cd>pcd+.1)e.at=.3;
@@ -189,7 +197,7 @@ function sim(dt){
   if(j.t==5){j.l-=dt;return j.l>0}
   if(j.t==29){let tp=null,bd=9;for(const p of players)if(p.on&&p.al){const d=Math.hypot(p.x-j.x,p.y-j.y);if(d<bd){bd=d;tp=p}}   // Giftschaedel verfolgt
    if(tp){const v=Math.hypot(j.vx,j.vy),a=Math.atan2(j.vy,j.vx);let da=Math.atan2(tp.y-j.y,tp.x-j.x)-a;da=Math.atan2(Math.sin(da),Math.cos(da));const na=a+Math.max(-1.5*dt,Math.min(1.5*dt,da));j.vx=Math.cos(na)*v;j.vy=Math.sin(na)*v}}
-  else if(j.t==30){j.w=(j.w||0)+dt*8;const v=Math.hypot(j.vx,j.vy)||1,k=Math.cos(j.w)*2.4*dt;j.x-=j.vy/v*k;j.y+=j.vx/v*k}   // Musiknoten fliegen in Schlangenlinie
+  else if(j.t==36){j.w=(j.w||0)+dt*8;const v=Math.hypot(j.vx,j.vy)||1,k=Math.cos(j.w)*2.4*dt;j.x-=j.vy/v*k;j.y+=j.vx/v*k}   // Musiknoten fliegen in Schlangenlinie
   j.x+=j.vx*dt;j.y+=j.vy*dt;j.l-=dt;let hit=wl(j.x,j.y)||j.l<=0;
   if(j.o<0){for(const p of players)if(p.on&&p.al&&!(p.z>.25&&j.t!=24)&&Math.hypot(p.x-j.x,p.y-j.y)<.4){hurtP(p,j.d||12);hit=1}}
   else for(const e of E)if(!e.dead&&Math.hypot(e.x-j.x,e.y-j.y)<e.r+.1){if(j.t==4)hurtE(e,16,j.o);hit=1;break}
@@ -357,7 +365,7 @@ addEventListener('gamepadconnected',()=>{GP.on=1});
 // ---------- Lokaler Spieler ----------
 function local(){
  const P=S.p[id];if(!P)return;
- if(mode==2&&P.rc!==me.rc){me.rc=P.rc;me.x=P.x;me.y=P.y;if(!S.st)me.w=firstW(me.lo)}
+ if(mode==2&&P.rc!==me.rc){if(me.rc>=0)me.a=Math.atan2(N/2-P.y,N/2-P.x);me.rc=P.rc;me.x=P.x;me.y=P.y;me.pt=0;if(!S.st)me.w=firstW(me.lo)}
  if(S.st){if(mode==2)me.lo=P.lo;if(!(me.lo>>me.w&1))me.w=1}
  if(mode==2)for(const j of S.j)if(j.t!=5){j.x+=j.vx*dt;j.y+=j.vy*dt}   // Geschosse zwischen zwei Updates weiterfliegen lassen
  if(P.hp<lastHp){padRumble();hurtFl=.3;hurtSnd();shk=Math.max(shk,2.5)}lastHp=P.hp;
