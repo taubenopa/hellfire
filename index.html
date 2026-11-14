@@ -5,9 +5,9 @@
 <div id="m">
  <div class="side">
   <canvas id="logo" width="150" height="52" aria-label="HELLFIRE LAN"></canvas>
-  <p class="tag">Koop-Shooter für 1 bis 4 Spieler. Wellen, Bosse und ein Story-Modus zu zweit.</p>
+  <p class="tag">Koop-Shooter für 1 bis 4 Spieler. Wellen, Bosse und ein Story-Modus für bis zu vier.</p>
   <nav id="nav">
-   <button data-go="story"><b>Story-Modus</b><i>Zu zweit gegen Slimee Rebel</i></button>
+   <button data-go="story"><b>Story-Modus</b><i>Mit bis zu 4 gegen Slimee Rebel</i></button>
    <button data-go="host"><b>Koop &amp; Deathmatch</b><i>Wellen und Bosse, allein oder mit Freunden</i></button>
    <button data-go="join"><b>Beitreten</b><i>Raum-Code vom Host eingeben</i></button>
    <button data-go="guns"><b>Waffen</b><i id="ls">Loadout</i></button>
@@ -19,12 +19,12 @@
   <section class="pane" id="p-story">
    <h2>Story-Modus</h2>
    <p class="lead">Slimee Rebel will den Insta-Account Lifestylecrazy zurück. Sechs Level, sechs Bosse, am Ende er selbst.</p>
-   <h3>Raum-Code für deinen Partner</h3><div class="code" id="hc2">...</div>
+   <h3>Raum-Code für dein Squad</h3><div class="code" id="hc2">...</div>
    <p id="pl2" class="hint"></p>
    <h3>Dein Charakter</h3><div class="chars" id="cg"></div>
    <div class="grid3"><label>Schwierigkeit<select id="sdf"><option value="0">Leicht</option><option value="1" selected>Normal</option><option value="2">Hart</option></select></label></div>
    <div class="row"><button class="pri big" onclick="startStory(0)">Neues Spiel starten</button><button class="big" id="scont" onclick="startStory(1)">Fortsetzen</button></div>
-   <p class="hint">Start nur mit Pistole. Nach jedem Level gibt es ein Case Opening mit neuer Waffe. Dein Partner gibt den Code unter „Beitreten“ ein, das geht auch nach dem Start. Alleine spielen geht auch.</p>
+   <p class="hint">Start nur mit Pistole. Nach jedem Level gibt es ein Case Opening mit neuer Waffe. Bis zu 3 Mitspieler geben den Code unter „Beitreten“ ein, das geht auch nach dem Start. Alleine spielen geht auch. Mit mehr Spielern kommen mehr Gegner, und die Bosse halten mehr aus.</p>
   </section>
   <section class="pane" id="p-host">
    <h2>Koop &amp; Deathmatch</h2>
