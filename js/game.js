@@ -261,21 +261,23 @@ function hitP(q,d,o){const was=q.al;hurtP(q,d);if(was&&!q.al&&q.i!==o&&players[o
 const cfg={iceServers:[]},enc=d=>btoa(JSON.stringify(d)),dec=s=>JSON.parse(atob(s.trim()));
 const waitIce=pc=>new Promise(r=>{if(pc.iceGatheringState=='complete')return r();pc.onicegatheringstatechange=()=>pc.iceGatheringState=='complete'&&r();setTimeout(r,4000)});
 const rnd=(k,v)=>typeof v=='number'?Math.round(v*100)/100:v;
-const ul=()=>{$('pl').textContent=players.map(p=>'P'+(p.i+1)+': '+(p.on?'verbunden':'frei')).join(' | ');$('pl2').textContent='Spieler 1: du  |  Spieler 2: '+(players[1].on?'verbunden \u2714':'wartet auf Beitritt...')};
+const ul=()=>{$('pl').textContent=players.map(p=>'P'+(p.i+1)+': '+(p.on?'verbunden':'frei')).join(' | ');$('pl2').textContent=players.map(p=>'Spieler '+(p.i+1)+': '+(p.i==0?'du':p.on?'verbunden \u2714':'frei')).join('  |  ')};
 const HC={set t(v){for(const k of['hc','hc2'])document.getElementById(k).textContent=v}};
 function hostMode(){$('m0').style.display='none';$('mh').style.display='block';ul();mkPeer()}
 function joinMode(){$('m0').style.display='none';$('mj').style.display='block'}
+// Platz fuer einen neuen Mitspieler: frei und nicht gerade von einem anderen Beitritt reserviert (wichtig bei 3-4 Spielern)
+const rsv=[0,0,0,0],freeSlot=()=>{const i=players.findIndex((p,i)=>i&&!p.on&&rsv[i]<Date.now());if(i>0)rsv[i]=Date.now()+20000;return i};
 async function invite(){
- const slot=players.findIndex((p,i)=>i&&!p.on&&(!storyLobby||i<2));if(slot<0){alert('Alle Plätze belegt');return}
- if(pend)try{pend.pc.close()}catch(e){}
+ const slot=freeSlot();if(slot<0){alert('Alle Plätze belegt');return}
+ if(pend){try{pend.pc.close()}catch(e){}rsv[pend.slot]=0}
  const pc=new RTCPeerConnection(cfg),c=pc.createDataChannel('g');pend={pc,slot};
- c.onopen=()=>{players[slot].on=true;chs[slot]=c;c.send(JSON.stringify({t:'hi',id:slot}));ul()};
+ c.onopen=()=>{if(pend&&pend.pc===pc)pend=null;players[slot].on=true;chs[slot]=c;c.send(JSON.stringify({t:'hi',id:slot}));ul()};
  c.onmessage=e=>{const m=JSON.parse(e.data),p=players[slot];
   if(p.al&&m.c===p.rc&&can(m.x,m.y,.2)){p.x=m.x;p.y=m.y}p.a=m.a;p.z=+m.z||0;p.f=m.f;p.w=m.w;if(!story)p.lo=(m.l|1)&8191;p.nm=String(m.n||"").slice(0,10);p.ch=m.h|0;if(m.k!==p.k){p.k=m.k;if(story&&SS)SS.cf=1}};
- c.onclose=()=>{players[slot].on=false;chs[slot]=null;ul()};
+ c.onclose=()=>{players[slot].on=false;chs[slot]=null;rsv[slot]=0;ul()};
  await pc.setLocalDescription(await pc.createOffer());await waitIce(pc);$('oc').value=enc(pc.localDescription);
 }
-async function accept(){try{await pend.pc.setRemoteDescription(dec($('ia').value));$('ia').value=''}catch(e){alert('Fehler: '+e.message)}}
+async function accept(){if(!pend){alert('Erst auf „Mitspieler einladen“ klicken.');return}try{await pend.pc.setRemoteDescription(dec($('ia').value));$('ia').value=''}catch(e){alert('Fehler: '+e.message)}}
 async function join(){
  try{
   const pc=new RTCPeerConnection(cfg);
@@ -296,12 +298,12 @@ function mkPeer(){
  pr.on('error',e=>{if(e.type=='unavailable-id')mkPeer();else HC.t='Fehler: '+e.type});
 }
 function hostConn(c){
- const slot=players.findIndex((p,i)=>i&&!p.on&&(!storyLobby||i<2));
+ const slot=freeSlot();
  if(slot<0){c.on('open',()=>{c.send(JSON.stringify({t:'full'}));setTimeout(()=>c.close(),300)});return}
  c.on('open',()=>{players[slot].on=true;chs[slot]=c;c.send(JSON.stringify({t:'hi',id:slot}));ul()});
  c.on('data',d=>{const m=JSON.parse(d),p=players[slot];
   if(p.al&&m.c===p.rc&&can(m.x,m.y,.2)){p.x=m.x;p.y=m.y}p.a=m.a;p.z=+m.z||0;p.f=m.f;p.w=m.w;if(!story)p.lo=(m.l|1)&8191;p.nm=String(m.n||"").slice(0,10);p.ch=m.h|0;if(m.k!==p.k){p.k=m.k;if(story&&SS)SS.cf=1}});
- c.on('close',()=>{players[slot].on=false;chs[slot]=null;ul()});
+ c.on('close',()=>{players[slot].on=false;chs[slot]=null;rsv[slot]=0;ul()});
 }
 function onNet(m){
  if(m.t=='hi'&&!mode){id=m.id;me={x:0,y:0,a:0,w:firstW(LO|1),lo:LO|1,f:0,rc:-1};mode=2;$('m').style.display='none';
@@ -673,7 +675,7 @@ function hud(){
  S.p.forEach((p,k)=>{if(p.on){x.fillStyle=PC[p.i];x.fillText((p.i==id?'> ':'')+(p.nm||'P'+(p.i+1))+'  '+(p.al?p.hp|0:'tot')+'  '+p.sc,VW-8,14+k*14)}});
  x.textAlign='center';x.fillStyle='#fff';x.font='bold 16px monospace';
  {const B=S.e.find(e=>(e.t==10||e.t==19||e.t>=30)&&!e.dead);if(B){const bw=220,bx0=gx-bw/2;x.fillStyle='#000a';x.fillRect(bx0-2,38,bw+4,14);x.fillStyle=B.hp<B.mh*.5?'#f80':B.t==19||B.t==35?'#a2c':'#c22';x.fillRect(bx0,40,bw*Math.max(0,B.hp/B.mh),10);x.fillStyle='#fff3';x.fillRect(bx0,40,bw*Math.max(0,B.hp/B.mh),2);x.font='bold 11px monospace';x.fillStyle='#fff';x.textAlign='center';x.fillText(bossName(B.t),gx,36);x.font='bold 16px monospace'}}
- if(!P.al){x.fillStyle='rgba(120,0,0,.5)';x.fillRect(0,0,VW,VH);x.fillStyle='#fff';x.fillText(S.st&&S.st.lives<=0&&P.rt<=0?'KEINE LEBEN MEHR - dein Partner muss durchhalten!':'DU BIST TOT - Respawn in '+Math.max(0,Math.ceil(P.rt)),VW/2,VH/2)}
+ if(!P.al){x.fillStyle='rgba(120,0,0,.5)';x.fillRect(0,0,VW,VH);x.fillStyle='#fff';x.fillText(S.st&&S.st.lives<=0&&P.rt<=0?'KEINE LEBEN MEHR - dein Team muss durchhalten!':'DU BIST TOT - Respawn in '+Math.max(0,Math.ceil(P.rt)),VW/2,VH/2)}
  else if(!S.dm&&!S.e.some(e=>!e.dead)&&(!S.st||S.st.ph=='play'))x.fillText(S.st&&S.st.wv>=S.st.wm?'Der Boss kommt...':'Nächste Welle kommt...',VW/2,50);
  if(bn>0){const bo=S.st?S.st.boss:S.wv%5==0,sc=1+Math.max(0,bn-3.2)*1.5;x.save();x.translate(VW/2,70);x.scale(sc,sc);x.globalAlpha=Math.min(1,bn);x.font='bold 26px monospace';const t=S.st?storyBanner():bo?'WELLE '+S.wv+' - BOSS: '+bossName(coopBoss(S.wv))+'!':'WELLE '+S.wv;x.fillStyle='#000a';x.fillText(t,1.5,1.5);x.fillStyle=bo?'#f44':'#fd4';x.fillText(t,0,0);x.restore();x.globalAlpha=1;x.font='bold 16px monospace'}
  if(document.pointerLockElement!==cv&&!GP.on){x.fillStyle='#fd4';x.fillText('KLICKEN ZUM STEUERN',VW/2,VH/2-40)}
