@@ -28,7 +28,7 @@ function flameTick(dt){ // Flammenwerfer laeuft als Schleife, solange geschossen
 // ================= GESCHOSSE UND EXPLOSIONEN (vorgerenderte Bilder) =================
 // Rauch-/Funkenspur pro Geschoss-Typ: [Menge, Farben, Lebensdauer, Hoehe, Auftrieb, Schwerkraft, Groesse]
 const TRL={3:[.9,['#bbb','#888','#fa3'],.5,.42,.3,0,.05],4:[.5,['#4ef','#aff'],.2],12:[1,['#6f6','#cfc','#3a3'],.4,.42,.2,0,.06],18:[.4,['#888','#665'],.3],
- 2:[.6,['#f80','#fd3','#f42'],.25],24:[.7,['#555','#f80','#333'],.4,.5,.4],29:[.6,['#6f4','#3a2'],.35],31:[.7,['#8cf','#fff'],.15],30:[.3,['#f6c','#fbd'],.3],23:[.3,['#a4f','#d9f'],.25]};
+ 2:[.6,['#f80','#fd3','#f42'],.25],24:[.7,['#555','#f80','#333'],.4,.5,.4],29:[.6,['#6f4','#3a2'],.35],37:[.7,['#8cf','#fff'],.15],36:[.3,['#f6c','#fbd'],.3],23:[.3,['#a4f','#d9f'],.25]};
 (function(){
  const mk=(n,f,N)=>{const fr=[];for(let k=0;k<(N||1);k++){const c=document.createElement('canvas');c.width=c.height=n;const g=c.getContext('2d');g.translate(n/2,n/2);f(g,n/2,k/(N||1),k);fr.push(c)}return fr};
  const glow=(g,r,stops)=>{const q=g.createRadialGradient(0,0,0,0,0,r);stops.forEach((c,i)=>q.addColorStop(i/(stops.length-1),c));g.fillStyle=q;g.beginPath();g.arc(0,0,r,0,7);g.fill()};
@@ -55,10 +55,10 @@ const TRL={3:[.9,['#bbb','#888','#fa3'],.5,.42,.3,0,.05],4:[.5,['#4ef','#aff'],.
  fx(28,.36,.42,mk(40,(g,r,u)=>{g.rotate(u*6.28);g.fillStyle='#d9dde2';g.beginPath();g.moveTo(-r*.1,-r*.9);g.lineTo(r*.14,-r*.1);g.lineTo(-r*.14,-r*.1);g.fill();g.fillStyle='#8a9098';g.fillRect(-r*.02,-r*.8,r*.04,r*.7);g.fillStyle='#3a2a20';g.fillRect(-r*.09,-r*.1,r*.18,r*.75);g.fillStyle='#bbb';g.fillRect(-r*.22,-r*.14,r*.44,r*.1)},8),{fps:18});
  // 29 Giftschaedel (verfolgt Spieler)
  fx(29,.42,.42,mk(48,(g,r,u)=>{glow(g,r,['#8f6c','#4c38','#4c30']);g.fillStyle='#b7f5a0';g.beginPath();g.arc(0,-r*.08,r*.42,0,7);g.fill();g.fillRect(-r*.24,r*.2,r*.48,r*.24);g.fillStyle='#143';g.beginPath();g.arc(-r*.16,-r*.1,r*.11,0,7);g.arc(r*.16,-r*.1,r*.11,0,7);g.fill();g.fillRect(-r*.03,r*.08,r*.06,r*.1);for(let k=-1;k<=1;k++)g.fillRect(k*r*.14-1,r*.3,2,r*.14)},1));
- // 30 Musiknote
- fx(30,.4,.42,mk(40,(g,r,u)=>{glow(g,r,['#ff6ad555','#ff6ad500']);g.rotate(Math.sin(u*6.28)*.35);g.fillStyle='#ff4fc3';g.beginPath();g.ellipse(-r*.18,r*.38,r*.24,r*.17,-.4,0,7);g.fill();g.fillRect(-r*.02,-r*.6,r*.1,r*1);g.beginPath();g.moveTo(r*.08,-r*.6);g.quadraticCurveTo(r*.6,-r*.4,r*.4,r*.05);g.quadraticCurveTo(r*.42,-r*.25,r*.08,-r*.3);g.fill();g.fillStyle='#fff';g.fillRect(-r*.28,r*.3,r*.1,r*.06)},8),{fps:10});
- // 31 Kugelblitz
- fx(31,.42,.42,mk(48,(g,r)=>{glow(g,r,['#fff','#bfe6ff','#49f8','#49f0']);g.strokeStyle='#fff';g.lineWidth=1.5;for(let k=0;k<5;k++){let a=Math.random()*6.28,d=r*.15;g.beginPath();g.moveTo(Math.cos(a)*d,Math.sin(a)*d);for(let s=0;s<4;s++){a+=(Math.random()-.5)*1.4;d+=r*.2;g.lineTo(Math.cos(a)*d,Math.sin(a)*d)}g.stroke()}},6),{add:1,fps:24});
+ // 36 Musiknote
+ fx(36,.4,.42,mk(40,(g,r,u)=>{glow(g,r,['#ff6ad555','#ff6ad500']);g.rotate(Math.sin(u*6.28)*.35);g.fillStyle='#ff4fc3';g.beginPath();g.ellipse(-r*.18,r*.38,r*.24,r*.17,-.4,0,7);g.fill();g.fillRect(-r*.02,-r*.6,r*.1,r*1);g.beginPath();g.moveTo(r*.08,-r*.6);g.quadraticCurveTo(r*.6,-r*.4,r*.4,r*.05);g.quadraticCurveTo(r*.42,-r*.25,r*.08,-r*.3);g.fill();g.fillStyle='#fff';g.fillRect(-r*.28,r*.3,r*.1,r*.06)},8),{fps:10});
+ // 37 Kugelblitz
+ fx(37,.42,.42,mk(48,(g,r)=>{glow(g,r,['#fff','#bfe6ff','#49f8','#49f0']);g.strokeStyle='#fff';g.lineWidth=1.5;for(let k=0;k<5;k++){let a=Math.random()*6.28,d=r*.15;g.beginPath();g.moveTo(Math.cos(a)*d,Math.sin(a)*d);for(let s=0;s<4;s++){a+=(Math.random()-.5)*1.4;d+=r*.2;g.lineTo(Math.cos(a)*d,Math.sin(a)*d)}g.stroke()}},6),{add:1,fps:24});
  // Pickups: 6 Munitionskiste, 7 Verbandskasten, 11 Ruestung
  const bx=(g,r,c,d,f)=>{const q=g.createLinearGradient(-r*.7,0,r*.7,0);q.addColorStop(0,d);q.addColorStop(.3,c);q.addColorStop(1,d);g.fillStyle=q;g.beginPath();g.roundRect(-r*.7,-r*.45,r*1.4,r*1.1,r*.12);g.fill();g.strokeStyle='#000a';g.lineWidth=1.5;g.stroke();g.fillStyle='#fff3';g.fillRect(-r*.62,-r*.4,r*1.24,r*.1);f(g,r)};
  fx(6,.34,.17,mk(48,(g,r)=>bx(g,r,'#6f8a3c','#3a4a20',(g,r)=>{g.fillStyle='#2a3418';g.fillRect(-r*.7,-r*.1,r*1.4,r*.12);for(let k=-1;k<=1;k++){g.fillStyle='#d9b23a';g.fillRect(k*r*.3-r*.07,r*.12,r*.14,r*.36);g.fillStyle='#a8541f';g.beginPath();g.arc(k*r*.3,r*.12,r*.07,3.14,0);g.fill()}})));
