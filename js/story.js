@@ -13,15 +13,15 @@ const BOSS_HELPERS=false;           // true = Bosse rufen wieder Helfer dazu (de
 const START_LIVES=5;                // gemeinsame Leben pro Level
 const WAVES_PER_LEVEL=3;            // Level 1: 3 Wellen, Level 2: 6, ... Level 6: 18 (5 = 5/10/.../30)
 // Bosse: hp Leben, sp Tempo, fan Faecherschuss (Winkel), fcd Pause dazwischen, rad Kugeln im Ring, rcd Pause,
-// pt Geschoss beim Faecher, rt Geschosse im Ring (2 Feuer, 23 Becher, 26 Stein, 27 Kugel, 28 Messer, 29 Giftschaedel/verfolgt, 30 Musiknote, 31 Kugelblitz)
+// pt Geschoss beim Faecher, rt Geschosse im Ring (2 Feuer, 23 Becher, 26 Stein, 27 Kugel, 28 Messer, 29 Giftschaedel/verfolgt, 36 Musiknote, 37 Kugelblitz)
 // min Helfer die er ruft (20 Messer-Typ, 21 Becher-Typ, 22 Sturmhaube), mel Nahkampf, bomb/dash/tele/spiral = Spezialangriffe
 const BOSS=[null,
- {nm:'LIL M',spr:'lilm',pt:30,rt:[30],hp:450,sp:1.3,fan:[-.25,0,.25],fcd:1.9,rad:8,rcd:7.5,min:[20],mel:20},
+ {nm:'LIL M',spr:'lilm',pt:36,rt:[36],hp:450,sp:1.3,fan:[-.25,0,.25],fcd:1.9,rad:8,rcd:7.5,min:[20],mel:20},
  {nm:'DRACHENLORD',spr:'drachenlord',pt:2,rt:[2],hp:900,sp:1.15,fan:[-.25,0,.25],fcd:1.8,rad:10,rcd:7,min:[21,20],mel:28,bomb:{cd:4.5,d:30}},
  {nm:'SEHRJAMAL',spr:'sehrjamal',pt:29,rt:[27],hp:1400,sp:1.9,fan:[-.4,-.2,0,.2,.4],fcd:1.7,rad:12,rcd:6.5,min:[22,20],mel:28,tele:7},
- {nm:'JERMAINE',spr:'jermaine',pt:31,rt:[26],hp:2000,sp:1.7,fan:[-.25,0,.25],fcd:1.7,rad:14,rcd:6,min:[20,20,21],mel:35,dash:{cd:4,v:9.5,d:32}},
+ {nm:'JERMAINE',spr:'jermaine',pt:37,rt:[26],hp:2000,sp:1.7,fan:[-.25,0,.25],fcd:1.7,rad:14,rcd:6,min:[20,20,21],mel:35,dash:{cd:4,v:9.5,d:32}},
  {nm:'RAPHAEL',spr:'raphael',pt:28,rt:[28],hp:2700,sp:1.9,fan:[-.4,-.2,0,.2,.4],fcd:1.5,rad:16,rcd:5.5,min:[22,21,20],mel:35,bomb:{cd:2.6,d:38},dash:{cd:6,v:10,d:32}},
- {nm:'SLIMEE REBEL',spr:'slime',pt:23,rt:[23,2,30],hp:4200,sp:2,fan:[-.4,-.2,0,.2,.4],fcd:1.3,rad:20,rcd:5,min:[22,22,21,20],mel:40,bomb:{cd:3.2,d:42},dash:{cd:5,v:11,d:36},tele:6.5,spiral:1}];
+ {nm:'SLIMEE REBEL',spr:'slime',pt:23,rt:[23,2,36],hp:4200,sp:2,fan:[-.4,-.2,0,.2,.4],fcd:1.3,rad:20,rcd:5,min:[22,22,21,20],mel:40,bomb:{cd:3.2,d:42},dash:{cd:5,v:11,d:36},tele:6.5,spiral:1}];
 const CHARS=[['taubenopa','taubenopa'],['EuroJunkie','eurojunkie'],['Jxhn2k','jxhn2k'],['YoungCola','youngcola'],['werwlf','werwlf'],['Adam','adam']];
 // Case Opening: welche Waffen (Index in WP) nach welchem Level in der Kiste sein koennen
 const CASEP=[null,[2,8,3],[2,8,3,9,11],[2,8,3,9,11,5,10,7],[3,9,11,5,10,7,4,12],[5,10,7,4,12,6]];
